@@ -1,26 +1,61 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component, Fragment } from "react";
+
+import { Query, Mutation } from "react-apollo";
+import gql from "graphql-tag";
+
+const QUERY = gql`
+  {
+    allCourses {
+      id
+      title
+      author
+    }
+  }
+`;
+
+const MUTATION = gql`
+  mutation Course($title: String!, $author: String!, $topic: String!) {
+    addCourse(title: $title, author: $author, topic: $topic) {
+      id
+      title
+      author
+    }
+  }
+`;
 
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <Fragment>
+        <Query query={QUERY}>
+          {({ data, error, loading }) => {
+            if (error) return <p>Error...</p>;
+            if (loading) return <p>Loading...</p>;
+            return data.allCourses.map(course => (
+              <div key={course.id}>
+                <h1>{course.title}</h1>
+              </div>
+            ));
+          }}
+        </Query>
+        <Mutation mutation={MUTATION}>
+          {(addCourse, { data }) => (
+            <button
+              onClick={() => {
+                addCourse({
+                  variables: {
+                    title: "Aprendendo a aprender",
+                    author: "Abacaxi",
+                    topic: "Marataízes"
+                  }
+                });
+              }}
+            >
+              Inserir
+            </button>
+          )}
+        </Mutation>
+      </Fragment>
     );
   }
 }
